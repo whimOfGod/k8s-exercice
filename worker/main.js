@@ -4,22 +4,15 @@ const express = require('express')
 const { v4 } = require('uuid')
 const id = v4()
 console.log(id)
-const PLANNER =
-  process.env.PLANNER !== undefined
-    ? process.env.PLANNER
-    : 'http://localhost:3000'
-const MULT =
-  process.env.MULT !== undefined ? JSON.parse(process.env.MULT) : true
-const ADD = process.env.ADD !== undefined ? JSON.parse(process.env.ADD) : true
+const PLANNER = process.env.PLANNER || 'http://planner:3000'
+const MULT = process.env.MULT ? JSON.parse(process.env.MULT) : true
+const ADD = process.env.ADD ? JSON.parse(process.env.ADD) : true
 const app = express()
 const port = process.env.PORT || 8080
-const ADDRESS =
-  process.env.ADDRESS !== undefined
-    ? process.env.ADDRESS
-    : 'http://localhost:' + port
+const ADDRESS = process.env.ADDRESS || 'http://worker:8080'
 const randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min
 const register = () =>
-  fetch(PLANNER + '/register', {
+  fetch(`${PLANNER}/register`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
@@ -27,6 +20,7 @@ const register = () =>
     },
     body: JSON.stringify({ url: ADDRESS, id }),
   })
+
 let mult = false
 let add = false
 let task = {}
@@ -37,7 +31,7 @@ app.use(
   })
 )
 
-if (MULT)
+if (MULT) {
   app.post('/mult', (req, res) => {
     if (mult) {
       console.error('mult', 'Already working')
@@ -54,8 +48,9 @@ if (MULT)
       res.send(JSON.stringify({ res: a * b, duration, id }))
     }, duration)
   })
+}
 
-if (ADD)
+if (ADD) {
   app.post('/add', (req, res) => {
     if (add) {
       console.error('add', 'Already working')
@@ -72,6 +67,7 @@ if (ADD)
       res.send(JSON.stringify({ res: a + b, duration, id }))
     }, duration)
   })
+}
 
 app.get('/', (req, res) => {
   if (mult) {
@@ -86,6 +82,6 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  // register()
+  register()  // Register the worker with the planner
   console.log(`Worker ${id} listening at http://localhost:${port}`)
 })
