@@ -82,6 +82,8 @@ app.get('/', (req, res) => {
 })
 
 app.listen(port, () => {
-  register()  // Register the worker with the planner
+   console.log("ADDRESS " + ADDRESS)
+   console.log("PLANNER " + PLANNER)
+   register()
   console.log(`Worker ${id} listening at http://localhost:${port}`)
 })
