@@ -3,7 +3,7 @@ const fetch = require('node-fetch')
 const express = require('express')
 
 const port = 1337
-const nbTasks = parseInt(process.env.TASKS) || 4  
+const nbTasks = parseInt(process.env.TASKS) || 50 
 
 const randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min
 const taskType = () => (randInt(0, 2) ? 'mult' : 'add')
@@ -13,10 +13,7 @@ const args = () => ({ a: randInt(0, 40), b: randInt(0, 40) })
 const generateTasks = (i) =>
   new Array(i).fill(1).map(() => ({ type: taskType(), args: args() }))
 
-let workers = {
-  add: [],
-  mult: []
-};
+let workers = [];
 
 const app = express()
 app.use(express.json())
@@ -28,15 +25,11 @@ app.get('/', (req, res) => {
 
 app.post('/register', (req, res) => {
   console.log(`Register `)
-  const { url, id } = req.body
+  const { url, id, specialization } = req.body
 
-  if (url.includes('worker-add')) {
-    workers.add.push({ url, id });
-    console.log(`Register worker-add : adding ${url} worker: ${id}`)
-  } else if (url.includes('worker-mult')) {
-    workers.mult.push({ url, id });
-    console.log(`Register worker-mult : adding ${url} worker: ${id}`)
-  }
+  workers.push({ url, id, specialization });
+  console.log(`Register worker : adding ${url} worker: ${id} with specialization: ${specialization}`)
+  
   res.send('ok')
 })
 
@@ -47,7 +40,7 @@ const wait = (mili) => new Promise((resolve) => setTimeout(resolve, mili))
 
 const sendTask = async (worker, task) => {
   console.log(`=> ${worker.url}/${task.type}`, task)
-  workers[task.type] = workers[task.type].filter((w) => w.id !== worker.id)
+  workers = workers.filter((w) => w.id !== worker.id)
   tasks = tasks.filter((t) => t !== task)
   try {
     const response = await fetch(`${worker.url}/${task.type}`, {
@@ -59,7 +52,7 @@ const sendTask = async (worker, task) => {
       body: JSON.stringify(task.args)
     })
     const result = await response.json()
-    workers[task.type].push(worker)
+    workers.push(worker)
     taskToDo -= 1
     console.log('---')
     console.log(nbTasks - taskToDo, '/', nbTasks, ':')
@@ -69,7 +62,7 @@ const sendTask = async (worker, task) => {
   } catch (err) {
     console.error(task, 'failed', err.message)
     tasks.push(task)
-    workers[task.type].push(worker)
+    workers.push(worker)
   }
 }
 
@@ -80,8 +73,9 @@ const main = async () => {
     if (tasks.length === 0) continue
 
     for (const task of tasks) {
-      if (workers[task.type].length === 0) continue
-      await sendTask(workers[task.type][0], task)
+      const availableWorkers = workers.filter(w => w.specialization === 'both' || w.specialization === task.type);
+      if (availableWorkers.length === 0) continue
+      await sendTask(availableWorkers[0], task)
     }
   }
   console.log('end of tasks')

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: planner
+  labels:
+    app: planner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: planner
+  template:
+    metadata:
+      labels:
+        app: planner
+    spec:
+      containers:
+      - name: planner
+        image: aaronkolins77/planner
+        ports:
+        - containerPort: 1337
+        env:
+        - name: TASKS
+          value: "50" 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: planner
+spec:
+  selector:
+    app: planner
+  ports:
+  - port: 8080
+    targetPort: 1337
+    protocol: TCP
+  type: LoadBalancer
