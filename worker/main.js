@@ -4,13 +4,17 @@ const express = require('express')
 const { v4 } = require('uuid')
 const id = v4()
 console.log(id)
+
 const PLANNER = process.env.PLANNER || 'http://planner:3000'
 const MULT = process.env.MULT ? JSON.parse(process.env.MULT) : true
 const ADD = process.env.ADD ? JSON.parse(process.env.ADD) : true
 const app = express()
 const port = process.env.PORT || 8080
 const ADDRESS = process.env.ADDRESS || 'http://worker:8080'
+const specialization = MULT && ADD ? 'both' : MULT ? 'mult' : 'add'
+
 const randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min
+
 const register = () =>
   fetch(`${PLANNER}/register`, {
     method: 'POST',
@@ -18,7 +22,7 @@ const register = () =>
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ url: ADDRESS, id }),
+    body: JSON.stringify({ url: ADDRESS, id, specialization }),
   })
 
 let mult = false

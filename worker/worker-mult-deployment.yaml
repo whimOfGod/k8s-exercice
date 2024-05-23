@@ -1,32 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: worker
+  name: worker-mult
   labels:
     app: worker
+    specialization: mult
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: worker
+      specialization: mult
   template:
     metadata:
       labels:
         app: worker
+        specialization: mult
     spec:
       containers:
         - name: worker
           image: aaronkolins77/worker
           ports:
-            - containerPort: 8080
+            - containerPort: 3000
           env:
             - name: ADDRESS
-              value: 'http://worker:8080'
+              value: 'http://worker-mult.default.svc.cluster.local:1337'
             - name: PORT
-              value: '8080'
+              value: '3000'
             - name: MULT
               value: 'true'
             - name: ADD
-              value: 'true'
+              value: 'false'
             - name: PLANNER
-              value: 'http://planner:3000'
+              value: 'http://planner.default.svc.cluster.local:8080'
