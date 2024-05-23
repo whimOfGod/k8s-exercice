@@ -1,4 +1,4 @@
-//récupération des variables d'environnement
+// récupération des variables d'environnement
 
 require('dotenv').config()
 const fetch = require('node-fetch')
@@ -31,9 +31,9 @@ app.get('/', (req, res) => {
 })
 
 app.post('/register', (req, res) => {
-  const { url, id } = req.body
-  console.log(`Register: adding ${url} worker: ${id}`)
-  workers.push({ url, id })
+  const { url, id, specialization } = req.body
+  console.log(`Register: adding ${url} worker: ${id} with specialization: ${specialization}`)
+  workers.push({ url, id, specialization })
   res.send('ok')
 })
 
@@ -41,7 +41,7 @@ let tasks = generateTasks(nbTasks)
 let taskToDo = nbTasks
 
 const wait = (mili) =>
-  new Promise((resolve, reject) => setTimeout(resolve, mili))
+  new Promise((resolve) => setTimeout(resolve, mili))
 
 const sendTask = async (worker, task) => {
   console.log(`=> ${worker.url}/${task.type}`, task)
@@ -78,7 +78,11 @@ const main = async () => {
   while (taskToDo > 0) {
     await wait(100)
     if (workers.length === 0 || tasks.length === 0) continue
-    sendTask(workers[0], tasks[0])
+    const task = tasks[0]
+    const suitableWorkers = workers.filter(worker => worker.specialization === task.type || worker.specialization === 'both')
+    if (suitableWorkers.length > 0) {
+      sendTask(suitableWorkers[0], task)
+    }
   }
   console.log('end of tasks')
   server.close()

@@ -1,18 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: worker
+  name: worker-mult
   labels:
     app: worker
+    specialization: mult
 spec:
   replicas: 3
   selector:
     matchLabels:
       app: worker
+      specialization: mult
   template:
     metadata:
       labels:
         app: worker
+        specialization: mult
     spec:
       containers:
         - name: worker
@@ -21,11 +24,49 @@ spec:
             - containerPort: 8080
           env:
             - name: ADDRESS
-              value: 'http://worker:8080'
+              value: 'http://worker-mult:8080'
             - name: PORT
               value: '8080'
             - name: MULT
               value: 'true'
+            - name: ADD
+              value: 'false'
+            - name: PLANNER
+              value: 'http://planner:3000'
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-add
+  labels:
+    app: worker
+    specialization: add
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: worker
+      specialization: add
+  template:
+    metadata:
+      labels:
+        app: worker
+        specialization: add
+    spec:
+      containers:
+        - name: worker
+          image: aaronkolins77/worker
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ADDRESS
+              value: 'http://worker-add:8080'
+            - name: PORT
+              value: '8080'
+            - name: MULT
+              value: 'false'
             - name: ADD
               value: 'true'
             - name: PLANNER
