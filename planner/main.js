@@ -3,7 +3,7 @@ const fetch = require('node-fetch')
 const express = require('express')
 
 const port = 1337
-const nbTasks = parseInt(process.env.TASKS) || 50 
+const nbTasks = parseInt(process.env.TASKS) || 100 
 
 const randInt = (min, max) => Math.floor(Math.random() * (max - min)) + min
 const taskType = () => (randInt(0, 2) ? 'mult' : 'add')

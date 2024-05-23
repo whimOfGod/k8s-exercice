@@ -4,42 +4,32 @@ metadata:
   name: worker
   labels:
     app: worker
+    specialization: both
 spec:
   replicas: 10
   selector:
     matchLabels:
       app: worker
+      specialization: both
   template:
     metadata:
       labels:
         app: worker
+        specialization: both
     spec:
       containers:
-      - name: worker
-        image: aaronkolins77/worker
-        ports:
-        - containerPort: 3000
-        env:
-        - name: ADDRESS
-          value: 'http://worker.default.svc.cluster.local:3000'
-        - name: PORT
-          value: '3000'
-        - name: MULT
-          value: 'true'
-        - name: ADD
-          value: 'true'
-        - name: PLANNER
-          value: 'http://planner.default.svc.cluster.local:8080'
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: worker
-spec:
-  selector:
-    app: worker
-  ports:
-  - port: 1337
-    targetPort: 3000
-    protocol: TCP
-  type: LoadBalancer
+        - name: worker
+          image: aaronkolins77/worker
+          ports:
+            - containerPort: 3000
+          env:
+            - name: ADDRESS
+              value: 'http://worker.default.svc.cluster.local:1337'
+            - name: PORT
+              value: '3000'
+            - name: MULT
+              value: 'true'
+            - name: ADD
+              value: 'true'
+            - name: PLANNER
+              value: 'http://planner.default.svc.cluster.local:8080'
